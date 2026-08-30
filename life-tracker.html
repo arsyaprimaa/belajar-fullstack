@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Life Studio</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: #0a0a0a; color: #fff; padding: 16px; padding-bottom: 100px; max-width: 600px; margin: 0 auto; }
+        
+        h1 { font-size: 22px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .subtitle { color: #666; font-size: 12px; margin-bottom: 16px; }
+        
+        /* Points Header */
+        .points-bar { 
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
+            border: 1px solid #333; border-radius: 16px; padding: 16px; 
+            margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .points-display { text-align: center; }
+        .points-value { font-size: 32px; font-weight: 700; color: #00ff88; }
+        .points-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .points-today { color: #ffaa00; font-size: 14px; margin-top: 4px; }
+        
+        /* Realtime */
+        .realtime-box { background: #141414; border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; border: 1px solid #222; }
+        .realtime-label { color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .realtime-number { font-size: 42px; font-weight: 200; color: #fff; line-height: 1; }
+        .realtime-unit { color: #555; font-size: 13px; margin-top: 4px; }
+        
+        /* Percentage Bar */
+        .pct-bar { background: #141414; border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid #222; }
+        .pct-label { display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 8px; }
+        .pct-track { height: 8px; background: #222; border-radius: 4px; overflow: hidden; display: flex; }
+        .pct-fill-prod { height: 100%; background: #00ff88; transition: width 0.5s; }
+        .pct-fill-unprod { height: 100%; background: #ff4444; transition: width 0.5s; }
+        .pct-legend { display: flex; gap: 16px; margin-top: 8px; font-size: 11px; }
+        .pct-legend span { display: flex; align-items: center; gap: 4px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        
+        /* Tabs */
+        .tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { 
+            background: #141414; border: 1px solid #333; color: #888; 
+            padding: 8px 14px; border-radius: 20px; font-size: 12px; 
+            cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0;
+        }
+        .tab.active { background: #fff; color: #000; border-color: #fff; font-weight: 600; }
+        
+        /* Chart Box */
+        .chart-box { background: #141414; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #222; }
+        .chart-title { font-size: 13px; color: #888; margin-bottom: 12px; display: flex; justify-content: space-between; }
+        .chart-wrap { position: relative; height: 220px; }
+        .chart-wrap-small { position: relative; height: 180px; margin-top: 16px; }
+        
+        /* Recommendations */
+        .rec-box { background: #141414; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #222; }
+        .rec-title { font-size: 13px; color: #888; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .rec-item { 
+            background: #1a1a1a; padding: 12px; border-radius: 10px; margin-bottom: 8px; 
+            border-left: 3px solid #00ff88; font-size: 13px; line-height: 1.5;
+        }
+        .rec-item.warning { border-left-color: #ffaa00; }
+        .rec-item.danger { border-left-color: #ff4444; }
+        
+        /* Form */
+        .form-box { background: #141414; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #222; }
+        .form-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        select, input { 
+            background: #0a0a0a; border: 1px solid #333; color: #fff; 
+            padding: 12px; border-radius: 10px; font-size: 14px; flex: 1; outline: none;
+        }
+        button { 
+            background: #fff; color: #000; border: none; padding: 14px; 
+            border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; font-size: 14px;
+        }
+        button:active { transform: scale(0.98); }
+        .btn-secondary { 
+            background: transparent; color: #888; border: 1px solid #333; 
+            margin-top: 8px; font-weight: 500;
+        }
+        
+        /* Activity List */
+        .activity-list { margin-top: 8px; }
+        .activity-item { 
+            background: #141414; padding: 14px; border-radius: 12px; 
+            margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+            border-left: 3px solid; border: 1px solid #222; border-left-width: 3px;
+        }
+        .activity-info { flex: 1; }
+        .activity-name { font-weight: 600; font-size: 14px; }
+        .activity-time { color: #666; font-size: 11px; margin-top: 2px; }
+        .activity-menit { font-weight: 700; font-size: 16px; margin-right: 12px; }
+        .activity-actions { display: flex; gap: 8px; }
+        .activity-actions button { 
+            width: auto; padding: 6px 12px; font-size: 11px; 
+            background: #1a1a1a; color: #888; border: 1px solid #333;
+        }
+        
+        /* Modal */
+        .modal-overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: flex-end;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content { 
+            background: #141414; width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; 
+            padding: 24px; border: 1px solid #333; border-bottom: none;
+        }
+        .modal-title { font-size: 18px; margin-bottom: 16px; }
+        .modal-close { 
+            position: absolute; top: 16px; right: 16px; background: #333; color: #fff; 
+            border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+        }
+        
+        /* Add Category Section */
+        .cat-section { background: #141414; border-radius: 16px; padding: 16px; border: 1px solid #222; margin-bottom: 16px; }
+        .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
+        .cat-chip { 
+            background: #1a1a1a; padding: 10px; border-radius: 10px; font-size: 12px; 
+            display: flex; align-items: center; gap: 6px; border: 1px solid #333;
+        }
+        .cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        
+        .empty { text-align: center; color: #444; padding: 40px; font-size: 14px; }
+        
+        .type-badge { 
+            font-size: 10px; padding: 2px 8px; border-radius: 4px; margin-left: 8px; 
+            text-transform: uppercase; font-weight: 700;
+        }
+        .type-prod { background: rgba(0,255,136,0.15); color: #00ff88; }
+        .type-unprod { background: rgba(255,68,68,0.15); color: #ff4444; }
+        .type-neutral { background: rgba(255,170,0,0.15); color: #ffaa00; }
+    </style>
+</head>
+<body>
+    <h1>📊 Life Studio</h1>
+    <p class="subtitle">Analytics pribadi — track, analyze, improve</p>
+    
+    <!-- Points -->
+    <div class="points-bar">
+        <div class="points-display">
+            <div class="points-label">Total Poin</div>
+            <div class="points-value" id="totalPoints">0</div>
+        </div>
+        <div style="text-align:center">
+            <div class="points-label">Hari Ini</div>
+            <div class="points-today" id="todayPoints">0 pts</div>
+        </div>
+        <div class="points-display">
+            <div class="points-label">Level</div>
+            <div class="points-value" style="font-size:20px; color:#fff;" id="levelBadge">F1</div>
+        </div>
+    </div>
+    
+    <!-- Realtime -->
+    <div class="realtime-box">
+        <div class="realtime-label">Menit Produktif Hari Ini</div>
+        <div class="realtime-number" id="todayTotal">0</div>
+        <div class="realtime-unit">menit</div>
+    </div>
+    
+    <!-- Percentage -->
+    <div class="pct-bar">
+        <div class="pct-label">
+            <span>Produktivitas Hari Ini</span>
+            <span id="pctText">0%</span>
+        </div>
+        <div class="pct-track">
+            <div class="pct-fill-prod" id="pctProd" style="width:0%"></div>
+            <div class="pct-fill-unprod" id="pctUnprod" style="width:0%"></div>
+        </div>
+        <div class="pct-legend">
+            <span><div class="dot" style="background:#00ff88"></div> Produktif</span>
+            <span><div class="dot" style="background:#ffaa00"></div> Netral</span>
+            <span><div class="dot" style="background:#ff4444"></div> Tidak Produktif</span>
+        </div>
+    </div>
+    
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="setFilter('today')">Hari Ini</div>
+        <div class="tab" onclick="setFilter('yesterday')">Kemarin</div>
+        <div class="tab" onclick="setFilter('week')">Minggu Ini</div>
+        <div class="tab" onclick="setFilter('month')">Bulan Ini</div>
+    </div>
+    
+    <!-- Main Chart -->
+    <div class="chart-box">
+        <div class="chart-title">
+            <span>Aktivitas per Jam</span>
+            <span style="color:#555;font-size:11px" id="chartSubtitle">Hari Ini</span>
+        </div>
+        <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+    </div>
+    
+    <!-- MACD Chart -->
+    <div class="chart-box">
+        <div class="chart-title">
+            <span>📈 Momentum Produktivitas (MACD-Style)</span>
+        </div>
+        <div class="chart-wrap-small"><canvas id="macdChart"></canvas></div>
+    </div>
+    
+    <!-- Recommendations -->
+    <div class="rec-box" id="recBox" style="display:none">
+        <div class="rec-title">💡 Rekomendasi</div>
+        <div id="recList"></div>
+    </div>
+    
+    <!-- Input Form -->
+    <div class="form-box">
+        <div class="form-row">
+            <select id="jenis"></select>
+            <input type="number" id="menit" placeholder="Menit" min="1" max="1440">
+        </div>
+        <button onclick="tambah()">Tambah Aktivitas</button>
+        <button class="btn-secondary" onclick="openCatModal()">+ Tambah Kategori Baru</button>
+    </div>
+    
+    <!-- Categories Display -->
+    <div class="cat-section">
+        <div style="font-size:13px;color:#888;margin-bottom:4px">Kategori Tersedia</div>
+        <div class="cat-grid" id="catGrid"></div>
+    </div>
+    
+    <!-- Activity List -->
+    <div class="activity-list" id="activityList"></div>
+    
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content" style="position:relative">
+            <div class="modal-title">Edit Aktivitas</div>
+            <input type="hidden" id="editId">
+            <div class="form-row">
+                <select id="editJenis"></select>
+                <input type="number" id="editMenit" placeholder="Menit" min="1" max="1440">
+            </div>
+            <button onclick="saveEdit()">Simpan Perubahan</button>
+            <button class="btn-secondary" onclick="closeModal()" style="margin-top:8px">Batal</button>
+        </div>
+    </div>
+    
+    <!-- Add Category Modal -->
+    <div class="modal-overlay" id="catModal">
+        <div class="modal-content" style="position:relative">
+            <div class="modal-title">Tambah Kategori</div>
+            <input type="text" id="newCatName" placeholder="Nama kategori (contoh: Membaca)" style="width:100%;margin-bottom:10px;">
+            <div class="form-row">
+                <select id="newCatType" style="flex:1">
+                    <option value="productive">✅ Produktif (+poin)</option>
+                    <option value="unproductive">❌ Tidak Produktif (-poin)</option>
+                    <option value="neutral">⚪ Netral (0 poin)</option>
+                </select>
+                <input type="color" id="newCatColor" value="#00ff88" style="flex:0 0 50px;padding:4px;">
+            </div>
+            <button onclick="saveCategory()">Tambah Kategori</button>
+            <button class="btn-secondary" onclick="closeCatModal()" style="margin-top:8px">Batal</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== DATA & CONFIG ====================
+        const defaultCategories = {
+            coding: { name: '💻 Coding', color: '#00ff88', type: 'productive' },
+            belajar: { name: '📚 Belajar', color: '#44ddff', type: 'productive' },
+            inggris: { name: '🎓 Bahasa Inggris', color: '#00ddaa', type: 'productive' },
+            workout: { name: '💪 Olahraga', color: '#4488ff', type: 'productive' },
+            konten: { name: '🎬 Konten', color: '#ff66cc', type: 'productive' },
+            trading: { name: '📈 Trading', color: '#ffaa00', type: 'productive' },
+            bersih: { name: '🧹 Bersih-bersih', color: '#88ff44', type: 'productive' },
+            makan: { name: '🍽️ Makan', color: '#ff8844', type: 'neutral' },
+            tidur: { name: '😴 Tidur/Siesta', color: '#aa66ff', type: 'unproductive' },
+            scroll: { name: '📱 Scroll Sosmed', color: '#ff4444', type: 'unproductive' },
+            nonton: { name: '📺 Nonton', color: '#ff2244', type: 'unproductive' },
+            gaming: { name: '🎮 Gaming', color: '#ff0088', type: 'unproductive' }
+        };
+        
+        let categories = JSON.parse(localStorage.getItem('lifeCategories')) || defaultCategories;
+        let data = JSON.parse(localStorage.getItem('lifeDataV3')) || [];
+        let currentFilter = 'today';
+        let mainChartInstance = null;
+        let macdChartInstance = null;
+        let editingId = null;
+        
+        const typeLabels = { productive: 'Produktif', unproductive: 'Tidak Produktif', neutral: 'Netral' };
+        const typeMultipliers = { productive: 1, unproductive: -1, neutral: 0 };
+        
+        function saveData() {
+            localStorage.setItem('lifeDataV3', JSON.stringify(data));
+            localStorage.setItem('lifeCategories', JSON.stringify(categories));
+        }
+        
+        function getToday() { return new Date().toISOString().split('T')[0]; }
+        function getYesterday() {
+            const d = new Date(); d.setDate(d.getDate() - 1);
+            return d.toISOString().split('T')[0];
+        }
+        function getWeekStart() {
+            const d = new Date(); d.setDate(d.getDate() - d.getDay());
+            return d.toISOString().split('T')[0];
+        }
+        function getMonthStart() { return new Date().toISOString().slice(0, 7) + '-01'; }
+        
+        // ==================== RENDER ====================
+        function renderCategoryOptions() {
+            const sel = document.getElementById('jenis');
+            const editSel = document.getElementById('editJenis');
+            sel.innerHTML = ''; editSel.innerHTML = '';
+            Object.entries(categories).forEach(([key, cat]) => {
+                const opt = new Option(cat.name + ' (' + typeLabels[cat.type] + ')', key);
+                const opt2 = new Option(cat.name, key);
+                sel.add(opt); editSel.add(opt2);
+            });
+        }
+        
+        function renderCatGrid() {
+            const grid = document.getElementById('catGrid');
+            grid.innerHTML = '';
+            Object.entries(categories).forEach(([key, cat]) => {
+                const badge = `<span class="type-badge type-${cat.type}">${typeLabels[cat.type]}</span>`;
+                grid.innerHTML += `
+                    <div class="cat-chip">
+                        <div class="cat-dot" style="background:${cat.color}"></div>
+                        <span>${cat.name} ${badge}</span>
+                    </div>
+                `;
+            });
+        }
+        
+        function getFilteredData() {
+            const today = getToday(), yesterday = getYesterday();
+            const weekStart = getWeekStart(), monthStart = getMonthStart();
+            return data.filter(d => {
+                if (currentFilter === 'today') return d.tanggal === today;
+                if (currentFilter === 'yesterday') return d.tanggal === yesterday;
+                if (currentFilter === 'week') return d.tanggal >= weekStart;
+                if (currentFilter === 'month') return d.tanggal >= monthStart;
+                return true;
+            });
+        }
+        
+        function calculatePoints(filteredData) {
+            let prod = 0, unprod = 0, neutral = 0, points = 0;
+            filteredData.forEach(d => {
+                const cat = categories[d.jenis];
+                if (!cat) return;
+                if (cat.type === 'productive') { prod += d.menit; points += d.menit; }
+                else if (cat.type === 'unproductive') { unprod += d.menit; points -= d.menit; }
+                else { neutral += d.menit; }
+            });
+            return { prod, unprod, neutral, points };
+        }
+        
+        function getLevel(totalPoints) {
+            if (totalPoints < 100) return 'F1';
+            if (totalPoints < 500) return 'F2';
+            if (totalPoints < 1000) return 'F3';
+            if (totalPoints < 2000) return 'E1';
+            if (totalPoints < 5000) return 'E2';
+            if (totalPoints < 10000) return 'D';
+            if (totalPoints < 20000) return 'C';
+            if (totalPoints < 50000) return 'B';
+            return 'A';
+        }
+        
+        function render() {
+            const filtered = getFilteredData();
+            const todayData = data.filter(d => d.tanggal === getToday());
+            const todayCalc = calculatePoints(todayData);
+            const allTimeCalc = calculatePoints(data);
+            
+            // Points
+            document.getElementById('todayPoints').textContent = (todayCalc.points >= 0 ? '+' : '') + todayCalc.points + ' pts';
+            document.getElementById('totalPoints').textContent = allTimeCalc.points;
+            document.getElementById('levelBadge').textContent = getLevel(allTimeCalc.points);
+            
+            // Realtime
+            document.getElementById('todayTotal').textContent = todayCalc.prod;
+            
+            // Percentage
+            const totalTracked = todayCalc.prod + todayCalc.unprod + todayCalc.neutral;
+            const prodPct = totalTracked > 0 ? (todayCalc.prod / totalTracked * 100) : 0;
+            const unprodPct = totalTracked > 0 ? (todayCalc.unprod / totalTracked * 100) : 0;
+            const neutralPct = totalTracked > 0 ? (todayCalc.neutral / totalTracked * 100) : 0;
+            document.getElementById('pctProd').style.width = prodPct + '%';
+            document.getElementById('pctUnprod').style.width = unprodPct + '%';
+            document.getElementById('pctText').textContent = Math.round(prodPct) + '% Produktif';
+            
+            // Charts
+            updateMainChart(filtered);
+            updateMACDChart(filtered);
+            
+            // Recommendations
+            generateRecommendations(todayCalc, todayData);
+            
+            // Activity List
+            const list = document.getElementById('activityList');
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty">Belum ada aktivitas di periode ini.<br>Mulai tambahkan!</div>';
+            } else {
+                list.innerHTML = '<div style="color:#888;font-size:12px;margin-bottom:8px;">Riwayat Aktivitas</div>';
+                filtered.slice().reverse().forEach(d => {
+                    const cat = categories[d.jenis] || { name: d.jenis, color: '#888', type: 'neutral' };
+                    const sign = cat.type === 'productive' ? '+' : (cat.type === 'unproductive' ? '-' : '');
+                    const pt = (typeMultipliers[cat.type] || 0) * d.menit;
+                    const ptStr = pt !== 0 ? ` (${sign}${pt}pts)` : '';
+                    list.innerHTML += `
+                        <div class="activity-item" style="border-left-color: ${cat.color}">
+                            <div class="activity-info">
+                                <div class="activity-name" style="color:${cat.color}">${cat.name}</div>
+                                <div class="activity-time">${d.tanggal} • ${d.jam}:00</div>
+                            </div>
+                            <div style="text-align:right">
+                                <div class="activity-menit">${d.menit}m${ptStr}</div>
+                                <div class="activity-actions">
+                                    <button onclick="openEdit('${d.id}')">Edit</button>
+                                    <button onclick="hapus('${d.id}')">Hapus</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+        
+        // ==================== CHARTS ====================
+        function updateMainChart(filtered) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            if (mainChartInstance) mainChartInstance.destroy();
+            
+            let labels = [], prodData = [], unprodData = [], neutralData = [];
+            
+            if (currentFilter === 'today' || currentFilter === 'yesterday') {
+                document.getElementById('chartSubtitle').textContent = currentFilter === 'today' ? 'Hari Ini (per jam)' : 'Kemarin (per jam)';
+                labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+                prodData = Array(24).fill(0); unprodData = Array(24).fill(0); neutralData = Array(24).fill(0);
+                filtered.forEach(d => {
+                    const cat = categories[d.jenis];
+                    if (!cat) return;
+                    if (cat.type === 'productive') prodData[d.jam] += d.menit;
+                    else if (cat.type === 'unproductive') unprodData[d.jam] += d.menit;
+                    else neutralData[d.jam] += d.menit;
+                });
+            } else {
+                const days = {};
+                filtered.forEach(d => {
+                    if (!days[d.tanggal]) days[d.tanggal] = { p: 0, u: 0, n: 0 };
+                    const cat = categories[d.jenis];
+                    if (!cat) return;
+                    if (cat.type === 'productive') days[d.tanggal].p += d.menit;
+                    else if (cat.type === 'unproductive') days[d.tanggal].u += d.menit;
+                    else days[d.tanggal].n += d.menit;
+                });
+                const sorted = Object.keys(days).sort();
+                labels = sorted.map(d => d.slice(5));
+                prodData = sorted.map(d => days[d].p);
+                unprodData = sorted.map(d => days[d].u);
+                neutralData = sorted.map(d => days[d].n);
+                document.getElementById('chartSubtitle').textContent = currentFilter === 'week' ? 'Minggu Ini (per hari)' : 'Bulan Ini (per hari)';
+            }
+            
+            mainChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Produktif', data: prodData, backgroundColor: '#00ff88', borderRadius: 3 },
+                        { label: 'Tidak Produktif', data: unprodData, backgroundColor: '#ff4444', borderRadius: 3 },
+                        { label: 'Netral', data: neutralData, backgroundColor: '#ffaa00', borderRadius: 3 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#888', font: { size: 11 } } } },
+                    scales: {
+                        y: { ticks: { color: '#555', font: { size: 10 } }, grid: { color: '#222' } },
+                        x: { ticks: { color: '#555', font: { size: 10 } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+        
+        function updateMACDChart(filtered) {
+            const ctx = document.getElementById('macdChart').getContext('2d');
+            if (macdChartInstance) macdChartInstance.destroy();
+            
+            // Aggregate by date for trend
+            const byDate = {};
+            filtered.forEach(d => {
+                if (!byDate[d.tanggal]) byDate[d.tanggal] = { p: 0, u: 0 };
+                const cat = categories[d.jenis];
+                if (!cat) return;
+                if (cat.type === 'productive') byDate[d.tanggal].p += d.menit;
+                else if (cat.type === 'unproductive') byDate[d.tanggal].u += d.menit;
+            });
+            
+            const sorted = Object.keys(byDate).sort();
+            if (sorted.length < 2) {
+                // Not enough data, show placeholder
+                document.getElementById('macdChart').style.display = 'none';
+                return;
+            }
+            document.getElementById('macdChart').style.display = 'block';
+            
+            const prodLine = sorted.map(d => byDate[d].p);
+            const unprodLine = sorted.map(d => byDate[d].u);
+            const histogram = sorted.map(d => byDate[d].p - byDate[d].u);
+            
+            macdChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sorted.map(d => d.slice(5)),
+                    datasets: [
+                        {
+                            label: 'Produktif (MACD)',
+                            data: prodLine,
+                            borderColor: '#00ff88',
+                            backgroundColor: 'rgba(0,255,136,0.1)',
+                            fill: true, tension: 0.4, pointRadius: 3, borderWidth: 2
+                        },
+                        {
+                            label: 'Tidak Produktif (Signal)',
+                            data: unprodLine,
+                            borderColor: '#ff4444',
+                            backgroundColor: 'rgba(255,68,68,0.1)',
+                            fill: true, tension: 0.4, pointRadius: 3, borderWidth: 2
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Momentum (Histogram)',
+                            data: histogram,
+                            backgroundColor: histogram.map(v => v >= 0 ? '#00ff88' : '#ff4444'),
+                            borderRadius: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#888', font: { size: 10 } } } },
+                    scales: {
+                        y: { ticks: { color: '#555', font: { size: 10 } }, grid: { color: '#222' } },
+                        x: { ticks: { color: '#555', font: { size: 10 } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+        
+        // ==================== RECOMMENDATIONS ====================
+        function generateRecommendations(calc, todayData) {
+            const recs = [];
+            const byType = {};
+            todayData.forEach(d => {
+                if (!byType[d.jenis]) byType[d.jenis] = 0;
+                byType[d.jenis] += d.menit;
+            });
+            
+            if (calc.prod === 0 && calc.unprod === 0) {
+                recs.push({ text: 'Hari ini masih kosong. Mulai dengan 15 menit coding atau belajar!', type: 'warning' });
+            } else {
+                if ((byType.scroll || 0) > 60 && (byType.coding || 0) === 0) {
+                    recs.push({ text: `Anda sudah scroll ${byType.scroll} menit tapi belum coding. Coba 25 menit coding sekarang!`, type: 'danger' });
+                }
+                if ((byType.nonton || 0) > 90) {
+                    recs.push({ text: `Nonton sudah ${byType.nonton} menit. Jangan lupa sisihkan waktu untuk skill building.`, type: 'warning' });
+                }
+                if ((byType.gaming || 0) > 60) {
+                    recs.push({ text: `Gaming sudah ${byType.gaming} menit. Consider ini sebagai reward setelah produktif.`, type: 'warning' });
+                }
+                if ((byType.coding || 0) > 60 && (byType.coding || 0) < 180) {
+                    recs.push({ text: 'Bagus! Coding sudah ' + byType.coding + ' menit. Istirahat 5 menit lalu lanjut.', type: '' });
+                }
+                if ((byType.coding || 0) >= 180) {
+                    recs.push({ text: '🔥 Luar biasa! 3 jam+ coding hari ini. Jangan lupa stretching dan makan.', type: '' });
+                }
+                if ((byType.workout || 0) === 0 && calc.prod > 0) {
+                    recs.push({ text: 'Jangan lupa gerak 30 menit hari ini untuk jaga energi.', type: 'warning' });
+                }
+                if ((byType.tidur || 0) > 90) {
+                    recs.push({ text: 'Tidur/siesta sudah >90 menit. Risiko groggy dan malas.', type: 'danger' });
+                }
+                if (calc.prod > calc.unprod && calc.prod > 0) {
+                    recs.push({ text: '✅ Hari ini lebih produktif! Pertahankan momentum.', type: '' });
+                } else if (calc.unprod > calc.prod && calc.unprod > 0) {
+                    recs.push({ text: '⚠️ Hari ini lebih banyak aktivitas tidak produktif. Reset dengan 1 task kecil.', type: 'danger' });
+                }
+                if ((byType.inggris || 0) === 0 && calc.prod > 60) {
+                    recs.push({ text: 'Sempatkan 15 menit Bahasa Inggris malam ini.', type: 'warning' });
+                }
+            }
+            
+            const box = document.getElementById('recBox');
+            const list = document.getElementById('recList');
+            if (recs.length === 0) {
+                box.style.display = 'none';
+            } else {
+                box.style.display = 'block';
+                list.innerHTML = recs.map(r => `<div class="rec-item ${r.type}">${r.text}</div>`).join('');
+            }
+        }
+        
+        // ==================== ACTIONS ====================
+        function tambah() {
+            const jenis = document.getElementById('jenis').value;
+            const menit = parseInt(document.getElementById('menit').value);
+            if (!menit || menit <= 0) return alert('Masukkan menit!');
+            if (menit > 1440) return alert('Maksimal 1440 menit (24 jam)!');
+            
+            const now = new Date();
+            data.push({
+                id: 'act_' + Date.now(),
+                tanggal: now.toISOString().split('T')[0],
+                jam: now.getHours(),
+                jenis, menit,
+                timestamp: Date.now()
+            });
+            saveData();
+            document.getElementById('menit').value = '';
+            render();
+        }
+        
+        function hapus(id) {
+            if (!confirm('Hapus aktivitas ini?')) return;
+            data = data.filter(d => d.id !== id);
+            saveData(); render();
+        }
+        
+        function openEdit(id) {
+            const item = data.find(d => d.id === id);
+            if (!item) return;
+            editingId = id;
+            document.getElementById('editId').value = id;
+            document.getElementById('editJenis').value = item.jenis;
+            document.getElementById('editMenit').value = item.menit;
+            document.getElementById('editModal').classList.add('active');
+        }
+        
+        function saveEdit() {
+            const item = data.find(d => d.id === editingId);
+            if (!item) return;
+            item.jenis = document.getElementById('editJenis').value;
+            item.menit = parseInt(document.getElementById('editMenit').value);
+            saveData(); render(); closeModal();
+        }
+        
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            editingId = null;
+        }
+        
+        function openCatModal() {
+            document.getElementById('catModal').classList.add('active');
+        }
+        
+        function closeCatModal() {
+            document.getElementById('catModal').classList.remove('active');
+            document.getElementById('newCatName').value = '';
+        }
+        
+        function saveCategory() {
+            const name = document.getElementById('newCatName').value.trim();
+            const type = document.getElementById('newCatType').value;
+            const color = document.getElementById('newCatColor').value;
+            if (!name) return alert('Masukkan nama kategori!');
+            
+            const key = 'cat_' + Date.now();
+            categories[key] = { name, color, type };
+            saveData();
+            renderCategoryOptions();
+            renderCatGrid();
+            closeCatModal();
+        }
+        
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            render();
+        }
+        
+        function exportData() {
+            const payload = {
+                categories: categories,
+                data: data,
+                exportedAt: new Date().toISOString(),
+                version: '3.1'
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `life-studio-backup-${getToday()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            document.getElementById('backupStatus').textContent = '✅ Backup berhasil di-download!';
+            setTimeout(() => document.getElementById('backupStatus').textContent = '', 3000);
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const payload = JSON.parse(e.target.result);
+                    if (payload.data && payload.categories) {
+                        if (!confirm(`Import backup dari ${payload.exportedAt || 'tanggal tidak diketahui'}? Data saat ini akan diganti.`)) return;
+                        data = payload.data;
+                        categories = payload.categories;
+                        saveData();
+                        renderCategoryOptions();
+                        renderCatGrid();
+                        render();
+                        document.getElementById('backupStatus').textContent = '✅ Import berhasil!';
+                    } else {
+                        alert('File backup tidak valid.');
+                    }
+                } catch (err) {
+                    alert('Gagal membaca file: ' + err.message);
+                }
+                input.value = '';
+            };
+            reader.readAsText(file);
+        }
+        
+        // ==================== INIT ====================
+        renderCategoryOptions();
+        renderCatGrid();
+        render();
+        
+        // Close modal on outside click
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+            m.addEventListener('click', (e) => { if (e.target === m) m.classList.remove('active'); });
+        });
+    </script>
+    <!-- Backup Section -->
+    <div class="cat-section" style="margin-top:16px">
+    <div style="font-size:13px;color:#888;margin-bottom:12px">💾 Backup & Restore</div>
+    <div style="display:flex;gap:8px">
+        <button onclick="exportData()" style="flex:1;background:#1a1a1a;color:#fff;border:1px solid #333">📤 Export Data</button>
+        <button onclick="document.getElementById('importFile').click()" style="flex:1;background:#1a1a1a;color:#fff;border:1px solid #333">📥 Import Data</button>
+    </div>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+    <div id="backupStatus" style="margin-top:8px;font-size:12px;color:#666"></div>
+    </div>
+</body>
+</html>
