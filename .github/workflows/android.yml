@@ -30,11 +30,25 @@ jobs:
       - name: Bundle HTML with Capacitor
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
+          
+          # Siapkan folder web
           mkdir -p www
           cp *.html www/index.html 2>/dev/null || cp index.html www/
-          npx cap init "Life Studio" com.lifestudio.app --web-dir www
+          
+          # Inisialisasi aplikasi dengan nama "Lifelog"
+          npx cap init "Lifelog" com.lifelog.app --web-dir www
           npx cap add android
+          
+          # Siapkan logo untuk icon dan splash screen
+          mkdir -p assets
+          # Pastikan nama file gambarnya persis "logo Lifelog.jpg" di repository Anda
+          cp "logo Lifelog.jpg" assets/icon.jpg
+          cp "logo Lifelog.jpg" assets/splash.jpg
+          
+          # Generate asset ke project Android
+          npx capacitor-assets generate --android
+          
           npx cap sync android
 
       - name: Build Debug APK
@@ -59,5 +73,5 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LifeStudio-APK
+          name: Lifelog-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
