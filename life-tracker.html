@@ -3,33 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Life Studio</title>
+    <title>Lifelog</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        body { background: #0a0a0a; color: #fff; padding: 16px; padding-bottom: 100px; max-width: 600px; margin: 0 auto; }
+        body { background: #0a0a0a; color: #fff; padding: 16px; padding-bottom: 120px; max-width: 600px; margin: 0 auto; }
         
         h1 { font-size: 22px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
         .subtitle { color: #666; font-size: 12px; margin-bottom: 16px; }
         
-        /* Points Header */
-        .points-bar { 
+        .date-header { 
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
             border: 1px solid #333; border-radius: 16px; padding: 16px; 
-            margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px; text-align: center;
+        }
+        .date-day { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 2px; }
+        .date-full { font-size: 18px; font-weight: 600; margin-top: 4px; }
+        
+        .points-bar { 
+            background: #141414; border: 1px solid #222; border-radius: 16px; 
+            padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;
         }
         .points-display { text-align: center; }
         .points-value { font-size: 32px; font-weight: 700; color: #00ff88; }
         .points-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
         .points-today { color: #ffaa00; font-size: 14px; margin-top: 4px; }
         
-        /* Realtime */
         .realtime-box { background: #141414; border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; border: 1px solid #222; }
         .realtime-label { color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
         .realtime-number { font-size: 42px; font-weight: 200; color: #fff; line-height: 1; }
         .realtime-unit { color: #555; font-size: 13px; margin-top: 4px; }
         
-        /* Percentage Bar */
         .pct-bar { background: #141414; border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid #222; }
         .pct-label { display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 8px; }
         .pct-track { height: 8px; background: #222; border-radius: 4px; overflow: hidden; display: flex; }
@@ -39,7 +43,6 @@
         .pct-legend span { display: flex; align-items: center; gap: 4px; }
         .dot { width: 8px; height: 8px; border-radius: 50%; }
         
-        /* Tabs */
         .tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; }
         .tabs::-webkit-scrollbar { display: none; }
         .tab { 
@@ -49,13 +52,11 @@
         }
         .tab.active { background: #fff; color: #000; border-color: #fff; font-weight: 600; }
         
-        /* Chart Box */
         .chart-box { background: #141414; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #222; }
         .chart-title { font-size: 13px; color: #888; margin-bottom: 12px; display: flex; justify-content: space-between; }
         .chart-wrap { position: relative; height: 220px; }
-        .chart-wrap-small { position: relative; height: 180px; margin-top: 16px; }
+        .chart-wrap-small { position: relative; height: 200px; margin-top: 16px; }
         
-        /* Recommendations */
         .rec-box { background: #141414; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #222; }
         .rec-title { font-size: 13px; color: #888; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
         .rec-item { 
@@ -65,81 +66,122 @@
         .rec-item.warning { border-left-color: #ffaa00; }
         .rec-item.danger { border-left-color: #ff4444; }
         
-        /* Form */
-        .form-box { background: #141414; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #222; }
-        .form-row { display: flex; gap: 8px; margin-bottom: 10px; }
-        select, input { 
-            background: #0a0a0a; border: 1px solid #333; color: #fff; 
-            padding: 12px; border-radius: 10px; font-size: 14px; flex: 1; outline: none;
-        }
-        button { 
-            background: #fff; color: #000; border: none; padding: 14px; 
-            border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; font-size: 14px;
-        }
-        button:active { transform: scale(0.98); }
-        .btn-secondary { 
-            background: transparent; color: #888; border: 1px solid #333; 
-            margin-top: 8px; font-weight: 500;
+        .overlap-banner {
+            background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.3); 
+            border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 12px; color: #ffaa00;
+            display: flex; align-items: center; gap: 8px;
         }
         
-        /* Activity List */
-        .activity-list { margin-top: 8px; }
+        .cat-grid-section { margin-bottom: 16px; }
+        .cat-grid-title { font-size: 13px; color: #888; margin-bottom: 12px; }
+        .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .cat-card { 
+            background: #141414; border: 1px solid #222; border-radius: 14px; 
+            padding: 16px; cursor: pointer; transition: all 0.15s; position: relative;
+        }
+        .cat-card:active { transform: scale(0.97); background: #1a1a1a; }
+        .cat-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .cat-emoji { font-size: 24px; }
+        .cat-name { font-weight: 600; font-size: 14px; }
+        .cat-type { 
+            font-size: 10px; padding: 3px 8px; border-radius: 4px; 
+            text-transform: uppercase; font-weight: 700; display: inline-block;
+        }
+        .type-prod { background: rgba(0,255,136,0.12); color: #00ff88; }
+        .type-unprod { background: rgba(255,68,68,0.12); color: #ff4444; }
+        .type-neutral { background: rgba(255,170,0,0.12); color: #ffaa00; }
+        .cat-plus { position: absolute; top: 12px; right: 12px; font-size: 20px; color: #444; }
+        
+        .add-cat-btn { 
+            background: transparent; border: 2px dashed #333; color: #666; 
+            padding: 16px; border-radius: 14px; text-align: center; font-size: 13px; cursor: pointer;
+        }
+        .add-cat-btn:active { border-color: #555; color: #888; }
+        
+        .activity-list { margin-top: 16px; }
         .activity-item { 
             background: #141414; padding: 14px; border-radius: 12px; 
             margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
-            border-left: 3px solid; border: 1px solid #222; border-left-width: 3px;
+            border: 1px solid #222; border-left: 3px solid;
         }
+        .activity-item.overlap { border: 1px solid rgba(255,170,0,0.4); border-left: 3px solid #ffaa00; }
         .activity-info { flex: 1; }
         .activity-name { font-weight: 600; font-size: 14px; }
         .activity-time { color: #666; font-size: 11px; margin-top: 2px; }
-        .activity-menit { font-weight: 700; font-size: 16px; margin-right: 12px; }
+        .activity-range { color: #888; font-size: 12px; margin-top: 2px; }
+        .activity-menit { font-weight: 700; font-size: 15px; margin-right: 12px; }
         .activity-actions { display: flex; gap: 8px; }
         .activity-actions button { 
             width: auto; padding: 6px 12px; font-size: 11px; 
             background: #1a1a1a; color: #888; border: 1px solid #333;
         }
+        .overlap-badge { 
+            font-size: 10px; background: rgba(255,170,0,0.2); color: #ffaa00; 
+            padding: 2px 8px; border-radius: 4px; margin-left: 6px; font-weight: 600;
+        }
         
-        /* Modal */
         .modal-overlay { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: flex-end;
+            background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: flex-end;
         }
         .modal-overlay.active { display: flex; }
         .modal-content { 
             background: #141414; width: 100%; max-width: 600px; border-radius: 24px 24px 0 0; 
-            padding: 24px; border: 1px solid #333; border-bottom: none;
+            padding: 24px; border: 1px solid #333; border-bottom: none; max-height: 90vh; overflow-y: auto;
         }
-        .modal-title { font-size: 18px; margin-bottom: 16px; }
-        .modal-close { 
-            position: absolute; top: 16px; right: 16px; background: #333; color: #fff; 
-            border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
-        }
+        .modal-title { font-size: 18px; margin-bottom: 4px; font-weight: 600; }
+        .modal-subtitle { color: #888; font-size: 13px; margin-bottom: 16px; }
         
-        /* Add Category Section */
-        .cat-section { background: #141414; border-radius: 16px; padding: 16px; border: 1px solid #222; margin-bottom: 16px; }
-        .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
-        .cat-chip { 
-            background: #1a1a1a; padding: 10px; border-radius: 10px; font-size: 12px; 
-            display: flex; align-items: center; gap: 6px; border: 1px solid #333;
+        .form-group { margin-bottom: 16px; }
+        .form-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
+        .form-input { 
+            background: #0a0a0a; border: 1px solid #333; color: #fff; 
+            padding: 14px; border-radius: 12px; font-size: 16px; width: 100%; outline: none;
         }
-        .cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-group { flex: 1; }
+        
+        .durasi-display { 
+            background: #1a1a1a; padding: 16px; border-radius: 12px; text-align: center; 
+            margin: 16px 0; border: 1px solid #333;
+        }
+        .durasi-value { font-size: 28px; font-weight: 700; color: #00ff88; }
+        .durasi-label { font-size: 12px; color: #888; margin-top: 4px; }
+        .durasi-warning { font-size: 12px; color: #ffaa00; margin-top: 8px; display: none; }
+        .durasi-warning.active { display: block; }
+        
+        button { 
+            background: #fff; color: #000; border: none; padding: 16px; 
+            border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; font-size: 15px;
+        }
+        button:active { transform: scale(0.98); }
+        .btn-secondary { 
+            background: transparent; color: #888; border: 1px solid #333; 
+            margin-top: 10px; font-weight: 500;
+        }
+        .btn-danger { background: #ff4444; color: #fff; margin-top: 10px; }
         
         .empty { text-align: center; color: #444; padding: 40px; font-size: 14px; }
         
-        .type-badge { 
-            font-size: 10px; padding: 2px 8px; border-radius: 4px; margin-left: 8px; 
-            text-transform: uppercase; font-weight: 700;
-        }
-        .type-prod { background: rgba(0,255,136,0.15); color: #00ff88; }
-        .type-unprod { background: rgba(255,68,68,0.15); color: #ff4444; }
-        .type-neutral { background: rgba(255,170,0,0.15); color: #ffaa00; }
+        .backup-box { background: #141414; border-radius: 16px; padding: 16px; border: 1px solid #222; margin-top: 16px; }
+        .backup-title { font-size: 13px; color: #888; margin-bottom: 12px; }
+        .backup-btns { display: flex; gap: 8px; }
+        .backup-btns button { flex: 1; font-size: 13px; padding: 12px; }
+        .backup-btns button:first-child { background: #1a1a1a; color: #fff; border: 1px solid #333; }
+        #backupStatus { margin-top: 8px; font-size: 12px; color: #666; }
+        
+        input[type="date"], input[type="time"] { color-scheme: dark; -webkit-appearance: none; }
     </style>
 </head>
 <body>
-    <h1>📊 Life Studio</h1>
+    <h1>📊 Lifelog</h1>
     <p class="subtitle">Analytics pribadi — track, analyze, improve</p>
     
-    <!-- Points -->
+    <div class="date-header">
+        <div class="date-day" id="headerDay">SENIN</div>
+        <div class="date-full" id="headerDate">31 Agustus 2026</div>
+    </div>
+    
     <div class="points-bar">
         <div class="points-display">
             <div class="points-label">Total Poin</div>
@@ -155,14 +197,12 @@
         </div>
     </div>
     
-    <!-- Realtime -->
     <div class="realtime-box">
         <div class="realtime-label">Menit Produktif Hari Ini</div>
         <div class="realtime-number" id="todayTotal">0</div>
         <div class="realtime-unit">menit</div>
     </div>
     
-    <!-- Percentage -->
     <div class="pct-bar">
         <div class="pct-label">
             <span>Produktivitas Hari Ini</span>
@@ -179,7 +219,6 @@
         </div>
     </div>
     
-    <!-- Tabs -->
     <div class="tabs">
         <div class="tab active" onclick="setFilter('today')">Hari Ini</div>
         <div class="tab" onclick="setFilter('yesterday')">Kemarin</div>
@@ -187,132 +226,245 @@
         <div class="tab" onclick="setFilter('month')">Bulan Ini</div>
     </div>
     
-    <!-- Main Chart -->
     <div class="chart-box">
         <div class="chart-title">
-            <span>Aktivitas per Jam</span>
-            <span style="color:#555;font-size:11px" id="chartSubtitle">Hari Ini</span>
+            <span id="mainChartTitle">Aktivitas per Jam</span>
+            <span style="color:#555;font-size:11px" id="mainChartSub">Hari Ini</span>
         </div>
         <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
     </div>
     
-    <!-- MACD Chart -->
     <div class="chart-box">
         <div class="chart-title">
-            <span>📈 Momentum Produktivitas (MACD-Style)</span>
+            <span>📈 Momentum Produktivitas</span>
+            <span style="color:#555;font-size:11px">MACD-Style</span>
         </div>
         <div class="chart-wrap-small"><canvas id="macdChart"></canvas></div>
     </div>
     
-    <!-- Recommendations -->
     <div class="rec-box" id="recBox" style="display:none">
         <div class="rec-title">💡 Rekomendasi</div>
         <div id="recList"></div>
     </div>
     
-    <!-- Input Form -->
-    <div class="form-box">
-        <div class="form-row">
-            <select id="jenis"></select>
-            <input type="number" id="menit" placeholder="Menit" min="1" max="1440">
-        </div>
-        <button onclick="tambah()">Tambah Aktivitas</button>
-        <button class="btn-secondary" onclick="openCatModal()">+ Tambah Kategori Baru</button>
-    </div>
-    
-    <!-- Categories Display -->
-    <div class="cat-section">
-        <div style="font-size:13px;color:#888;margin-bottom:4px">Kategori Tersedia</div>
+    <div class="cat-grid-section">
+        <div class="cat-grid-title">Tap kategori untuk mencatat aktivitas</div>
         <div class="cat-grid" id="catGrid"></div>
+        <div class="add-cat-btn" onclick="openCatModal()" style="margin-top:10px">+ Tambah Kategori Baru</div>
     </div>
     
-    <!-- Activity List -->
     <div class="activity-list" id="activityList"></div>
     
-    <!-- Edit Modal -->
-    <div class="modal-overlay" id="editModal">
-        <div class="modal-content" style="position:relative">
-            <div class="modal-title">Edit Aktivitas</div>
-            <input type="hidden" id="editId">
-            <div class="form-row">
-                <select id="editJenis"></select>
-                <input type="number" id="editMenit" placeholder="Menit" min="1" max="1440">
+    <div class="backup-box">
+        <div class="backup-title">💾 Backup & Restore</div>
+        <div class="backup-btns">
+            <button onclick="exportData()">📤 Export</button>
+            <button onclick="document.getElementById('importFile').click()">📥 Import</button>
+        </div>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+        <div id="backupStatus"></div>
+    </div>
+
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-content">
+            <div class="modal-title" id="addModalTitle">Tambah Aktivitas</div>
+            <div class="modal-subtitle" id="addModalSubtitle">Isi rentang waktu aktivitas Anda</div>
+            
+            <div class="form-group">
+                <label class="form-label">Tanggal</label>
+                <input type="date" class="form-input" id="addDate">
+                <div style="color:#888;font-size:12px;margin-top:6px" id="addDateDisplay">Senin, 31 Agustus 2026</div>
             </div>
-            <button onclick="saveEdit()">Simpan Perubahan</button>
-            <button class="btn-secondary" onclick="closeModal()" style="margin-top:8px">Batal</button>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Jam Mulai</label>
+                    <input type="time" class="form-input" id="addStart">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jam Selesai</label>
+                    <input type="time" class="form-input" id="addEnd">
+                </div>
+            </div>
+            
+            <div class="durasi-display">
+                <div class="durasi-value" id="addDurasi">60 menit</div>
+                <div class="durasi-label">Total Durasi</div>
+                <div class="durasi-warning" id="addOverlapWarning">⚠️ Waktu ini bertabrakan dengan aktivitas lain</div>
+            </div>
+            
+            <button onclick="saveAdd()">Simpan Aktivitas</button>
+            <button class="btn-secondary" onclick="closeAddModal()">Batal</button>
         </div>
     </div>
     
-    <!-- Add Category Modal -->
-    <div class="modal-overlay" id="catModal">
-        <div class="modal-content" style="position:relative">
-            <div class="modal-title">Tambah Kategori</div>
-            <input type="text" id="newCatName" placeholder="Nama kategori (contoh: Membaca)" style="width:100%;margin-bottom:10px;">
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content">
+            <div class="modal-title">Edit Aktivitas</div>
+            <input type="hidden" id="editId">
+            
+            <div class="form-group">
+                <label class="form-label">Kategori</label>
+                <select class="form-input" id="editJenis" style="background:#0a0a0a"></select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Tanggal</label>
+                <input type="date" class="form-input" id="editDate">
+            </div>
+            
             <div class="form-row">
-                <select id="newCatType" style="flex:1">
-                    <option value="productive">✅ Produktif (+poin)</option>
-                    <option value="unproductive">❌ Tidak Produktif (-poin)</option>
-                    <option value="neutral">⚪ Netral (0 poin)</option>
-                </select>
-                <input type="color" id="newCatColor" value="#00ff88" style="flex:0 0 50px;padding:4px;">
+                <div class="form-group">
+                    <label class="form-label">Jam Mulai</label>
+                    <input type="time" class="form-input" id="editStart">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jam Selesai</label>
+                    <input type="time" class="form-input" id="editEnd">
+                </div>
+            </div>
+            
+            <div class="durasi-display">
+                <div class="durasi-value" id="editDurasi">0 menit</div>
+                <div class="durasi-label">Total Durasi</div>
+                <div class="durasi-warning" id="editOverlapWarning">⚠️ Waktu ini bertabrakan dengan aktivitas lain</div>
+            </div>
+            
+            <button onclick="saveEdit()">Simpan Perubahan</button>
+            <button class="btn-secondary" onclick="closeEditModal()">Batal</button>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="catModal">
+        <div class="modal-content">
+            <div class="modal-title">Tambah Kategori</div>
+            <div class="form-group">
+                <label class="form-label">Nama Kategori</label>
+                <input type="text" class="form-input" id="newCatName" placeholder="Contoh: Membaca">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Tipe</label>
+                    <select class="form-input" id="newCatType">
+                        <option value="productive">✅ Produktif (+poin)</option>
+                        <option value="unproductive">❌ Tidak Produktif (-poin)</option>
+                        <option value="neutral">⚪ Netral (0 poin)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Warna</label>
+                    <input type="color" class="form-input" id="newCatColor" value="#00ff88" style="padding:4px;height:48px">
+                </div>
             </div>
             <button onclick="saveCategory()">Tambah Kategori</button>
-            <button class="btn-secondary" onclick="closeCatModal()" style="margin-top:8px">Batal</button>
+            <button class="btn-secondary" onclick="closeCatModal()">Batal</button>
         </div>
     </div>
 
     <script>
-        // ==================== DATA & CONFIG ====================
         const defaultCategories = {
-            coding: { name: '💻 Coding', color: '#00ff88', type: 'productive' },
-            belajar: { name: '📚 Belajar', color: '#44ddff', type: 'productive' },
-            inggris: { name: '🎓 Bahasa Inggris', color: '#00ddaa', type: 'productive' },
-            workout: { name: '💪 Olahraga', color: '#4488ff', type: 'productive' },
-            konten: { name: '🎬 Konten', color: '#ff66cc', type: 'productive' },
-            trading: { name: '📈 Trading', color: '#ffaa00', type: 'productive' },
-            bersih: { name: '🧹 Bersih-bersih', color: '#88ff44', type: 'productive' },
-            makan: { name: '🍽️ Makan', color: '#ff8844', type: 'neutral' },
-            tidur: { name: '😴 Tidur/Siesta', color: '#aa66ff', type: 'unproductive' },
-            scroll: { name: '📱 Scroll Sosmed', color: '#ff4444', type: 'unproductive' },
-            nonton: { name: '📺 Nonton', color: '#ff2244', type: 'unproductive' },
-            gaming: { name: '🎮 Gaming', color: '#ff0088', type: 'unproductive' }
+            coding: { name: 'Coding', emoji: '💻', color: '#00ff88', type: 'productive' },
+            belajar: { name: 'Belajar', emoji: '📚', color: '#44ddff', type: 'productive' },
+            inggris: { name: 'Bahasa Inggris', emoji: '🎓', color: '#00ddaa', type: 'productive' },
+            olahraga: { name: 'Olahraga', emoji: '💪', color: '#4488ff', type: 'productive' },
+            konten: { name: 'Konten', emoji: '🎬', color: '#ff66cc', type: 'productive' },
+            trading: { name: 'Trading', emoji: '📈', color: '#ffaa00', type: 'productive' },
+            bersih: { name: 'Bersih-bersih', emoji: '🧹', color: '#88ff44', type: 'productive' },
+            makan: { name: 'Makan', emoji: '🍽️', color: '#ff8844', type: 'neutral' },
+            tidur: { name: 'Tidur/Siesta', emoji: '😴', color: '#aa66ff', type: 'unproductive' },
+            scroll: { name: 'Scroll Sosmed', emoji: '📱', color: '#ff4444', type: 'unproductive' },
+            nonton: { name: 'Nonton', emoji: '📺', color: '#ff2244', type: 'unproductive' },
+            gaming: { name: 'Gaming', emoji: '🎮', color: '#ff0088', type: 'unproductive' }
         };
         
-        let categories = JSON.parse(localStorage.getItem('lifeCategories')) || defaultCategories;
-        let data = JSON.parse(localStorage.getItem('lifeDataV3')) || [];
+        let categories = JSON.parse(localStorage.getItem('lifeCategoriesV4')) || defaultCategories;
+        let data = JSON.parse(localStorage.getItem('lifeDataV4')) || [];
         let currentFilter = 'today';
         let mainChartInstance = null;
         let macdChartInstance = null;
-        let editingId = null;
+        let selectedCatKey = null;
         
         const typeLabels = { productive: 'Produktif', unproductive: 'Tidak Produktif', neutral: 'Netral' };
         const typeMultipliers = { productive: 1, unproductive: -1, neutral: 0 };
+        const hariList = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        const bulanList = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
         
         function saveData() {
-            localStorage.setItem('lifeDataV3', JSON.stringify(data));
-            localStorage.setItem('lifeCategories', JSON.stringify(categories));
+            localStorage.setItem('lifeDataV4', JSON.stringify(data));
+            localStorage.setItem('lifeCategoriesV4', JSON.stringify(categories));
         }
         
-        function getToday() { return new Date().toISOString().split('T')[0]; }
+        function formatDateLong(dateStr) {
+            const [y, m, day] = dateStr.split('-').map(Number);
+            const d = new Date(y, m - 1, day);
+            return `${hariList[d.getDay()]}, ${d.getDate()} ${bulanList[d.getMonth()]} ${d.getFullYear()}`;
+        }
+        
+        
+        function getToday() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
         function getYesterday() {
-            const d = new Date(); d.setDate(d.getDate() - 1);
-            return d.toISOString().split('T')[0];
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
+
         function getWeekStart() {
-            const d = new Date(); d.setDate(d.getDate() - d.getDay());
-            return d.toISOString().split('T')[0];
+            const d = new Date();
+            d.setDate(d.getDate() - d.getDay());
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
-        function getMonthStart() { return new Date().toISOString().slice(0, 7) + '-01'; }
+
+        function getMonthStart() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+        }
         
-        // ==================== RENDER ====================
-        function renderCategoryOptions() {
-            const sel = document.getElementById('jenis');
-            const editSel = document.getElementById('editJenis');
-            sel.innerHTML = ''; editSel.innerHTML = '';
-            Object.entries(categories).forEach(([key, cat]) => {
-                const opt = new Option(cat.name + ' (' + typeLabels[cat.type] + ')', key);
-                const opt2 = new Option(cat.name, key);
-                sel.add(opt); editSel.add(opt2);
+        function getDefaultTimes() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const nextH = String((now.getHours() + 1) % 24).padStart(2, '0');
+            return { start: `${h}:00`, end: `${nextH}:00` };
+        }
+        
+        function timeToDecimal(timeStr) {
+            const [h, m] = timeStr.split(':').map(Number);
+            return h + m / 60;
+        }
+        
+        function decimalToTime(dec) {
+            const h = Math.floor(dec);
+            const m = Math.round((dec - h) * 60);
+            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        }
+        
+        function calcDurasi(start, end) {
+            const s = timeToDecimal(start);
+            const e = timeToDecimal(end);
+            if (e <= s) return 0;
+            return Math.round((e - s) * 60);
+        }
+        
+        function distributeToHours(jamMulai, jamSelesai) {
+            const result = [];
+            let cur = jamMulai;
+            while (cur < jamSelesai) {
+                const h = Math.floor(cur);
+                const end = Math.min(h + 1, jamSelesai);
+                result.push({ hour: h, minutes: Math.round((end - cur) * 60) });
+                cur = end;
+            }
+            return result;
+        }
+        
+        function checkOverlap(tanggal, jamMulai, jamSelesai, excludeId = null) {
+            return data.some(d => {
+                if (d.tanggal !== tanggal) return false;
+                if (excludeId && d.id === excludeId) return false;
+                return (jamMulai < d.jamSelesai && jamSelesai > d.jamMulai);
             });
         }
         
@@ -320,11 +472,15 @@
             const grid = document.getElementById('catGrid');
             grid.innerHTML = '';
             Object.entries(categories).forEach(([key, cat]) => {
-                const badge = `<span class="type-badge type-${cat.type}">${typeLabels[cat.type]}</span>`;
+                const typeClass = cat.type === 'productive' ? 'type-prod' : (cat.type === 'unproductive' ? 'type-unprod' : 'type-neutral');
                 grid.innerHTML += `
-                    <div class="cat-chip">
-                        <div class="cat-dot" style="background:${cat.color}"></div>
-                        <span>${cat.name} ${badge}</span>
+                    <div class="cat-card" onclick="openAddModal('${key}')" style="border-left: 3px solid ${cat.color}">
+                        <div class="cat-plus">+</div>
+                        <div class="cat-card-header">
+                            <span class="cat-emoji">${cat.emoji}</span>
+                            <span class="cat-name">${cat.name}</span>
+                        </div>
+                        <span class="cat-type ${typeClass}">${typeLabels[cat.type]}</span>
                     </div>
                 `;
             });
@@ -367,99 +523,133 @@
         }
         
         function render() {
-            const filtered = getFilteredData();
-            const todayData = data.filter(d => d.tanggal === getToday());
+            const todayStr = getToday();
+            const todayData = data.filter(d => d.tanggal === todayStr);
             const todayCalc = calculatePoints(todayData);
             const allTimeCalc = calculatePoints(data);
             
-            // Points
+            document.getElementById('headerDay').textContent = hariList[new Date(todayStr + 'T00:00:00').getDay()];
+            document.getElementById('headerDate').textContent = formatDateLong(todayStr);
+            
             document.getElementById('todayPoints').textContent = (todayCalc.points >= 0 ? '+' : '') + todayCalc.points + ' pts';
             document.getElementById('totalPoints').textContent = allTimeCalc.points;
             document.getElementById('levelBadge').textContent = getLevel(allTimeCalc.points);
             
-            // Realtime
             document.getElementById('todayTotal').textContent = todayCalc.prod;
             
-            // Percentage
             const totalTracked = todayCalc.prod + todayCalc.unprod + todayCalc.neutral;
             const prodPct = totalTracked > 0 ? (todayCalc.prod / totalTracked * 100) : 0;
             const unprodPct = totalTracked > 0 ? (todayCalc.unprod / totalTracked * 100) : 0;
-            const neutralPct = totalTracked > 0 ? (todayCalc.neutral / totalTracked * 100) : 0;
             document.getElementById('pctProd').style.width = prodPct + '%';
             document.getElementById('pctUnprod').style.width = unprodPct + '%';
             document.getElementById('pctText').textContent = Math.round(prodPct) + '% Produktif';
             
-            // Charts
-            updateMainChart(filtered);
-            updateMACDChart(filtered);
-            
-            // Recommendations
+            updateMainChart();
+            updateMACDChart();
             generateRecommendations(todayCalc, todayData);
-            
-            // Activity List
-            const list = document.getElementById('activityList');
-            if (filtered.length === 0) {
-                list.innerHTML = '<div class="empty">Belum ada aktivitas di periode ini.<br>Mulai tambahkan!</div>';
-            } else {
-                list.innerHTML = '<div style="color:#888;font-size:12px;margin-bottom:8px;">Riwayat Aktivitas</div>';
-                filtered.slice().reverse().forEach(d => {
-                    const cat = categories[d.jenis] || { name: d.jenis, color: '#888', type: 'neutral' };
-                    const sign = cat.type === 'productive' ? '+' : (cat.type === 'unproductive' ? '-' : '');
-                    const pt = (typeMultipliers[cat.type] || 0) * d.menit;
-                    const ptStr = pt !== 0 ? ` (${sign}${pt}pts)` : '';
-                    list.innerHTML += `
-                        <div class="activity-item" style="border-left-color: ${cat.color}">
-                            <div class="activity-info">
-                                <div class="activity-name" style="color:${cat.color}">${cat.name}</div>
-                                <div class="activity-time">${d.tanggal} • ${d.jam}:00</div>
-                            </div>
-                            <div style="text-align:right">
-                                <div class="activity-menit">${d.menit}m${ptStr}</div>
-                                <div class="activity-actions">
-                                    <button onclick="openEdit('${d.id}')">Edit</button>
-                                    <button onclick="hapus('${d.id}')">Hapus</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
+            renderActivityList();
         }
         
-        // ==================== CHARTS ====================
-        function updateMainChart(filtered) {
+        function renderActivityList() {
+            const list = document.getElementById('activityList');
+            const filtered = getFilteredData();
+            
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty">Belum ada aktivitas di periode ini.<br>Tap kategori di atas untuk mulai mencatat!</div>';
+                return;
+            }
+            
+            // Check for overlaps in the filtered data
+            const overlaps = new Set();
+            for (let i = 0; i < filtered.length; i++) {
+                for (let j = i + 1; j < filtered.length; j++) {
+                    const a = filtered[i], b = filtered[j];
+                    if (a.tanggal === b.tanggal && a.jamMulai < b.jamSelesai && a.jamSelesai > b.jamMulai) {
+                        overlaps.add(a.id);
+                        overlaps.add(b.id);
+                    }
+                }
+            }
+            
+            let html = '';
+            if (overlaps.size > 0) {
+                html += `<div class="overlap-banner">⚠️ Ada ${overlaps.size} aktivitas yang waktunya bertabrakan. Total menit di chart mungkin melebihi 60 menit/jam karena multitasking.</div>`;
+            }
+            html += '<div style="color:#888;font-size:12px;margin-bottom:8px">Riwayat Aktivitas</div>';
+            
+            filtered.slice().reverse().forEach(d => {
+                const cat = categories[d.jenis] || { name: d.jenis, color: '#888', type: 'neutral', emoji: '❓' };
+                const sign = cat.type === 'productive' ? '+' : (cat.type === 'unproductive' ? '-' : '');
+                const pt = (typeMultipliers[cat.type] || 0) * d.menit;
+                const ptStr = pt !== 0 ? ` (${sign}${pt}pts)` : '';
+                const rangeStr = `${decimalToTime(d.jamMulai)} - ${decimalToTime(d.jamSelesai)}`;
+                const isOverlap = overlaps.has(d.id);
+                
+                html += `
+                    <div class="activity-item ${isOverlap ? 'overlap' : ''}" style="border-left-color: ${cat.color}">
+                        <div class="activity-info">
+                            <div class="activity-name" style="color:${cat.color}">
+                                ${cat.emoji} ${cat.name}
+                                ${isOverlap ? '<span class="overlap-badge">OVERLAP</span>' : ''}
+                            </div>
+                            <div class="activity-time">${formatDateLong(d.tanggal)}</div>
+                            <div class="activity-range">${rangeStr} • ${d.menit} menit</div>
+                        </div>
+                        <div style="text-align:right">
+                            <div class="activity-menit">${d.menit}m${ptStr}</div>
+                            <div class="activity-actions">
+                                <button onclick="openEdit('${d.id}')">Edit</button>
+                                <button onclick="hapus('${d.id}')">Hapus</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+        
+        function updateMainChart() {
             const ctx = document.getElementById('mainChart').getContext('2d');
             if (mainChartInstance) mainChartInstance.destroy();
             
+            const filtered = getFilteredData();
             let labels = [], prodData = [], unprodData = [], neutralData = [];
             
             if (currentFilter === 'today' || currentFilter === 'yesterday') {
-                document.getElementById('chartSubtitle').textContent = currentFilter === 'today' ? 'Hari Ini (per jam)' : 'Kemarin (per jam)';
-                labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+                const targetDate = currentFilter === 'today' ? getToday() : getYesterday();
+                document.getElementById('mainChartTitle').textContent = 'Aktivitas per Jam (24h)';
+                document.getElementById('mainChartSub').textContent = currentFilter === 'today' ? 'Hari Ini' : 'Kemarin';
+                
+                labels = Array.from({length: 24}, (_, i) => `${String(i).padStart(2,'0')}:00`);
                 prodData = Array(24).fill(0); unprodData = Array(24).fill(0); neutralData = Array(24).fill(0);
+                
                 filtered.forEach(d => {
                     const cat = categories[d.jenis];
                     if (!cat) return;
-                    if (cat.type === 'productive') prodData[d.jam] += d.menit;
-                    else if (cat.type === 'unproductive') unprodData[d.jam] += d.menit;
-                    else neutralData[d.jam] += d.menit;
+                    const dist = distributeToHours(d.jamMulai, d.jamSelesai);
+                    dist.forEach(item => {
+                        if (cat.type === 'productive') prodData[item.hour] += item.minutes;
+                        else if (cat.type === 'unproductive') unprodData[item.hour] += item.minutes;
+                        else neutralData[item.hour] += item.minutes;
+                    });
                 });
             } else {
-                const days = {};
+                const daily = {};
                 filtered.forEach(d => {
-                    if (!days[d.tanggal]) days[d.tanggal] = { p: 0, u: 0, n: 0 };
+                    if (!daily[d.tanggal]) daily[d.tanggal] = { p: 0, u: 0, n: 0 };
                     const cat = categories[d.jenis];
                     if (!cat) return;
-                    if (cat.type === 'productive') days[d.tanggal].p += d.menit;
-                    else if (cat.type === 'unproductive') days[d.tanggal].u += d.menit;
-                    else days[d.tanggal].n += d.menit;
+                    if (cat.type === 'productive') daily[d.tanggal].p += d.menit;
+                    else if (cat.type === 'unproductive') daily[d.tanggal].u += d.menit;
+                    else daily[d.tanggal].n += d.menit;
                 });
-                const sorted = Object.keys(days).sort();
+                const sorted = Object.keys(daily).sort();
                 labels = sorted.map(d => d.slice(5));
-                prodData = sorted.map(d => days[d].p);
-                unprodData = sorted.map(d => days[d].u);
-                neutralData = sorted.map(d => days[d].n);
-                document.getElementById('chartSubtitle').textContent = currentFilter === 'week' ? 'Minggu Ini (per hari)' : 'Bulan Ini (per hari)';
+                prodData = sorted.map(d => daily[d].p);
+                unprodData = sorted.map(d => daily[d].u);
+                neutralData = sorted.map(d => daily[d].n);
+                document.getElementById('mainChartTitle').textContent = 'Aktivitas per Hari';
+                document.getElementById('mainChartSub').textContent = currentFilter === 'week' ? 'Minggu Ini' : 'Bulan Ini';
             }
             
             mainChartInstance = new Chart(ctx, {
@@ -468,46 +658,47 @@
                     labels,
                     datasets: [
                         { label: 'Produktif', data: prodData, backgroundColor: '#00ff88', borderRadius: 3 },
-                        { label: 'Tidak Produktif', data: unprodData, backgroundColor: '#ff4444', borderRadius: 3 },
-                        { label: 'Netral', data: neutralData, backgroundColor: '#ffaa00', borderRadius: 3 }
+                        { label: 'Netral', data: neutralData, backgroundColor: '#ffaa00', borderRadius: 3 },
+                        { label: 'Tidak Produktif', data: unprodData, backgroundColor: '#ff4444', borderRadius: 3 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#888', font: { size: 11 } } } },
                     scales: {
-                        y: { ticks: { color: '#555', font: { size: 10 } }, grid: { color: '#222' } },
-                        x: { ticks: { color: '#555', font: { size: 10 } }, grid: { display: false } }
+                        x: { stacked: true, ticks: { color: '#555', font: { size: 10 } }, grid: { display: false } },
+                        y: { stacked: true, ticks: { color: '#555', font: { size: 10 } }, grid: { color: '#222' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#888', font: { size: 11 }, boxWidth: 12 } }
                     }
                 }
             });
         }
         
-        function updateMACDChart(filtered) {
+        function updateMACDChart() {
             const ctx = document.getElementById('macdChart').getContext('2d');
             if (macdChartInstance) macdChartInstance.destroy();
             
-            // Aggregate by date for trend
-            const byDate = {};
+            const filtered = getFilteredData();
+            const daily = {};
             filtered.forEach(d => {
-                if (!byDate[d.tanggal]) byDate[d.tanggal] = { p: 0, u: 0 };
+                if (!daily[d.tanggal]) daily[d.tanggal] = { p: 0, u: 0 };
                 const cat = categories[d.jenis];
                 if (!cat) return;
-                if (cat.type === 'productive') byDate[d.tanggal].p += d.menit;
-                else if (cat.type === 'unproductive') byDate[d.tanggal].u += d.menit;
+                if (cat.type === 'productive') daily[d.tanggal].p += d.menit;
+                else if (cat.type === 'unproductive') daily[d.tanggal].u += d.menit;
             });
             
-            const sorted = Object.keys(byDate).sort();
+            const sorted = Object.keys(daily).sort();
             if (sorted.length < 2) {
-                // Not enough data, show placeholder
                 document.getElementById('macdChart').style.display = 'none';
                 return;
             }
             document.getElementById('macdChart').style.display = 'block';
             
-            const prodLine = sorted.map(d => byDate[d].p);
-            const unprodLine = sorted.map(d => byDate[d].u);
-            const histogram = sorted.map(d => byDate[d].p - byDate[d].u);
+            const prodLine = sorted.map(d => daily[d].p);
+            const unprodLine = sorted.map(d => daily[d].u);
+            const histogram = sorted.map(d => daily[d].p - daily[d].u);
             
             macdChartInstance = new Chart(ctx, {
                 type: 'line',
@@ -518,37 +709,39 @@
                             label: 'Produktif (MACD)',
                             data: prodLine,
                             borderColor: '#00ff88',
-                            backgroundColor: 'rgba(0,255,136,0.1)',
-                            fill: true, tension: 0.4, pointRadius: 3, borderWidth: 2
+                            backgroundColor: 'transparent',
+                            tension: 0.3, pointRadius: 4, borderWidth: 2.5
                         },
                         {
                             label: 'Tidak Produktif (Signal)',
                             data: unprodLine,
                             borderColor: '#ff4444',
-                            backgroundColor: 'rgba(255,68,68,0.1)',
-                            fill: true, tension: 0.4, pointRadius: 3, borderWidth: 2
+                            backgroundColor: 'transparent',
+                            tension: 0.3, pointRadius: 4, borderWidth: 2.5
                         },
                         {
                             type: 'bar',
-                            label: 'Momentum (Histogram)',
+                            label: 'Momentum',
                             data: histogram,
-                            backgroundColor: histogram.map(v => v >= 0 ? '#00ff88' : '#ff4444'),
-                            borderRadius: 2
+                            backgroundColor: histogram.map(v => v >= 0 ? 'rgba(0,255,136,0.3)' : 'rgba(255,68,68,0.3)'),
+                            borderColor: histogram.map(v => v >= 0 ? '#00ff88' : '#ff4444'),
+                            borderWidth: 1, borderRadius: 3
                         }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#888', font: { size: 10 } } } },
                     scales: {
                         y: { ticks: { color: '#555', font: { size: 10 } }, grid: { color: '#222' } },
                         x: { ticks: { color: '#555', font: { size: 10 } }, grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#888', font: { size: 10 }, boxWidth: 10 } }
                     }
                 }
             });
         }
         
-        // ==================== RECOMMENDATIONS ====================
         function generateRecommendations(calc, todayData) {
             const recs = [];
             const byType = {};
@@ -558,7 +751,7 @@
             });
             
             if (calc.prod === 0 && calc.unprod === 0) {
-                recs.push({ text: 'Hari ini masih kosong. Mulai dengan 15 menit coding atau belajar!', type: 'warning' });
+                recs.push({ text: 'Hari ini masih kosong. Tap kategori di atas untuk mulai mencatat!', type: 'warning' });
             } else {
                 if ((byType.scroll || 0) > 60 && (byType.coding || 0) === 0) {
                     recs.push({ text: `Anda sudah scroll ${byType.scroll} menit tapi belum coding. Coba 25 menit coding sekarang!`, type: 'danger' });
@@ -601,23 +794,82 @@
             }
         }
         
-        // ==================== ACTIONS ====================
-        function tambah() {
-            const jenis = document.getElementById('jenis').value;
-            const menit = parseInt(document.getElementById('menit').value);
-            if (!menit || menit <= 0) return alert('Masukkan menit!');
-            if (menit > 1440) return alert('Maksimal 1440 menit (24 jam)!');
+        function openAddModal(catKey) {
+            selectedCatKey = catKey;
+            const cat = categories[catKey];
+            const defs = getDefaultTimes();
             
-            const now = new Date();
+            document.getElementById('addModalTitle').textContent = `Tambah: ${cat.emoji} ${cat.name}`;
+            document.getElementById('addDate').value = getToday();
+            document.getElementById('addDateDisplay').textContent = formatDateLong(getToday());
+            document.getElementById('addStart').value = defs.start;
+            document.getElementById('addEnd').value = defs.end;
+            updateAddDurasi();
+            document.getElementById('addModal').classList.add('active');
+        }
+        
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+            selectedCatKey = null;
+        }
+        
+        function updateAddDurasi() {
+            const tanggal = document.getElementById('addDate').value;
+            const start = timeToDecimal(document.getElementById('addStart').value);
+            const end = timeToDecimal(document.getElementById('addEnd').value);
+            const d = calcDurasi(document.getElementById('addStart').value, document.getElementById('addEnd').value);
+            document.getElementById('addDurasi').textContent = d + ' menit';
+            document.getElementById('addDurasi').style.color = d > 0 ? '#00ff88' : '#ff4444';
+            
+            const hasOverlap = checkOverlap(tanggal, start, end);
+            document.getElementById('addOverlapWarning').classList.toggle('active', hasOverlap);
+        }
+        
+        function updateEditDurasi() {
+            const tanggal = document.getElementById('editDate').value;
+            const start = timeToDecimal(document.getElementById('editStart').value);
+            const end = timeToDecimal(document.getElementById('editEnd').value);
+            const d = calcDurasi(document.getElementById('editStart').value, document.getElementById('editEnd').value);
+            document.getElementById('editDurasi').textContent = d + ' menit';
+            document.getElementById('editDurasi').style.color = d > 0 ? '#00ff88' : '#ff4444';
+            
+            const editId = document.getElementById('editId').value;
+            const hasOverlap = checkOverlap(tanggal, start, end, editId);
+            document.getElementById('editOverlapWarning').classList.toggle('active', hasOverlap);
+        }
+        
+        document.getElementById('addStart').addEventListener('change', updateAddDurasi);
+        document.getElementById('addEnd').addEventListener('change', updateAddDurasi);
+        document.getElementById('addDate').addEventListener('change', function() {
+            document.getElementById('addDateDisplay').textContent = formatDateLong(this.value);
+            updateAddDurasi();
+        });
+        document.getElementById('editStart').addEventListener('change', updateEditDurasi);
+        document.getElementById('editEnd').addEventListener('change', updateEditDurasi);
+        document.getElementById('editDate').addEventListener('change', updateEditDurasi);
+        
+        function saveAdd() {
+            const tanggal = document.getElementById('addDate').value;
+            const startStr = document.getElementById('addStart').value;
+            const endStr = document.getElementById('addEnd').value;
+            const menit = calcDurasi(startStr, endStr);
+            const start = timeToDecimal(startStr);
+            const end = timeToDecimal(endStr);
+            
+            if (!tanggal) return alert('Pilih tanggal!');
+            if (menit <= 0) return alert('Jam selesai harus lebih besar dari jam mulai!');
+            
             data.push({
                 id: 'act_' + Date.now(),
-                tanggal: now.toISOString().split('T')[0],
-                jam: now.getHours(),
-                jenis, menit,
+                tanggal,
+                jamMulai: start,
+                jamSelesai: end,
+                jenis: selectedCatKey,
+                menit,
                 timestamp: Date.now()
             });
             saveData();
-            document.getElementById('menit').value = '';
+            closeAddModal();
             render();
         }
         
@@ -630,35 +882,49 @@
         function openEdit(id) {
             const item = data.find(d => d.id === id);
             if (!item) return;
-            editingId = id;
+            
+            const sel = document.getElementById('editJenis');
+            sel.innerHTML = '';
+            Object.entries(categories).forEach(([key, cat]) => {
+                sel.add(new Option(cat.name, key));
+            });
+            
             document.getElementById('editId').value = id;
             document.getElementById('editJenis').value = item.jenis;
-            document.getElementById('editMenit').value = item.menit;
+            document.getElementById('editDate').value = item.tanggal;
+            document.getElementById('editStart').value = decimalToTime(item.jamMulai);
+            document.getElementById('editEnd').value = decimalToTime(item.jamSelesai);
+            updateEditDurasi();
             document.getElementById('editModal').classList.add('active');
         }
         
         function saveEdit() {
-            const item = data.find(d => d.id === editingId);
+            const id = document.getElementById('editId').value;
+            const item = data.find(d => d.id === id);
             if (!item) return;
+            
             item.jenis = document.getElementById('editJenis').value;
-            item.menit = parseInt(document.getElementById('editMenit').value);
-            saveData(); render(); closeModal();
+            item.tanggal = document.getElementById('editDate').value;
+            item.jamMulai = timeToDecimal(document.getElementById('editStart').value);
+            item.jamSelesai = timeToDecimal(document.getElementById('editEnd').value);
+            item.menit = calcDurasi(document.getElementById('editStart').value, document.getElementById('editEnd').value);
+            
+            if (item.menit <= 0) return alert('Jam selesai harus lebih besar dari jam mulai!');
+            
+            saveData(); render(); closeEditModal();
         }
         
-        function closeModal() {
+        function closeEditModal() {
             document.getElementById('editModal').classList.remove('active');
-            editingId = null;
         }
         
         function openCatModal() {
             document.getElementById('catModal').classList.add('active');
         }
-        
         function closeCatModal() {
             document.getElementById('catModal').classList.remove('active');
             document.getElementById('newCatName').value = '';
         }
-        
         function saveCategory() {
             const name = document.getElementById('newCatName').value.trim();
             const type = document.getElementById('newCatType').value;
@@ -666,9 +932,8 @@
             if (!name) return alert('Masukkan nama kategori!');
             
             const key = 'cat_' + Date.now();
-            categories[key] = { name, color, type };
+            categories[key] = { name, color, type, emoji: '🔹' };
             saveData();
-            renderCategoryOptions();
             renderCatGrid();
             closeCatModal();
         }
@@ -681,12 +946,7 @@
         }
         
         function exportData() {
-            const payload = {
-                categories: categories,
-                data: data,
-                exportedAt: new Date().toISOString(),
-                version: '3.1'
-            };
+            const payload = { categories, data, exportedAt: new Date().toISOString(), version: '4.1' };
             const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -697,7 +957,7 @@
             document.getElementById('backupStatus').textContent = '✅ Backup berhasil di-download!';
             setTimeout(() => document.getElementById('backupStatus').textContent = '', 3000);
         }
-
+        
         function importData(input) {
             const file = input.files[0];
             if (!file) return;
@@ -710,7 +970,6 @@
                         data = payload.data;
                         categories = payload.categories;
                         saveData();
-                        renderCategoryOptions();
                         renderCatGrid();
                         render();
                         document.getElementById('backupStatus').textContent = '✅ Import berhasil!';
@@ -725,25 +984,17 @@
             reader.readAsText(file);
         }
         
-        // ==================== INIT ====================
-        renderCategoryOptions();
         renderCatGrid();
         render();
-        
-        // Close modal on outside click
+        setInterval(() => {
+        const todayStr = getToday();
+        document.getElementById('headerDay').textContent = hariList[new Date(todayStr + 'T00:00:00').getDay()];
+        document.getElementById('headerDate').textContent = formatDateLong(todayStr);
+        }, 60000);
+
         document.querySelectorAll('.modal-overlay').forEach(m => {
             m.addEventListener('click', (e) => { if (e.target === m) m.classList.remove('active'); });
         });
     </script>
-    <!-- Backup Section -->
-    <div class="cat-section" style="margin-top:16px">
-    <div style="font-size:13px;color:#888;margin-bottom:12px">💾 Backup & Restore</div>
-    <div style="display:flex;gap:8px">
-        <button onclick="exportData()" style="flex:1;background:#1a1a1a;color:#fff;border:1px solid #333">📤 Export Data</button>
-        <button onclick="document.getElementById('importFile').click()" style="flex:1;background:#1a1a1a;color:#fff;border:1px solid #333">📥 Import Data</button>
-    </div>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
-    <div id="backupStatus" style="margin-top:8px;font-size:12px;color:#666"></div>
-    </div>
 </body>
 </html>
